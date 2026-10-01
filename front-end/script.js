@@ -181,7 +181,7 @@ async function item() {
         if (token()) {
             const u = JSON.parse(localStorage.getItem('usuario') || '{}');
             if (String(u.id) === String(i.usuario_id)) {
-                document.getElementById('acoes').innerHTML = `<div style="margin-top:15px"><button class="btn secondary" onclick="mudarStatus(${i.id},'Reservado')">Reservar</button> <button class="btn secondary" onclick="mudarStatus(${i.id},'Doado')">Marcar como doado</button> <button class="btn danger" onclick="mudarStatus(${i.id},'Cancelado')">Cancelar</button></div>`;
+                document.getElementById('acoes').innerHTML = `<div style="margin-top:15px"><button class="btn secondary" onclick="mudarStatus(${i.id},'Reservado')">Reservar</button> <button class="btn secondary" onclick="mudarStatus(${i.id},'Doado')">Marcar como doado</button> <button class="btn danger" onclick="mudarStatus(${i.id},'Disponível')">Cancelar</button></div>`;
             }
         }
     } catch(e) { el.innerHTML = '<p class="msg error">'+esc(e.message)+'</p>'; }

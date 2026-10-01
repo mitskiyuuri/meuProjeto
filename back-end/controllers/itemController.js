@@ -1,8 +1,7 @@
 const itemModel = require("../models/itemModel");
 
-// 1. Criar item de doação
 exports.criarItem = (req, res) => {
-    const { titulo, descricao, categoria_id, estado, cidade, bairro } = req.body;
+    const { titulo, descricao, categoria_id, estado, cidade, bairro, cep, endereco, numero } = req.body;
 
     if (!titulo || !descricao || !categoria_id || !estado) {
         return res.status(400).json({
@@ -15,42 +14,61 @@ exports.criarItem = (req, res) => {
         descricao,
         categoria_id,
         estado,
-        cidade: cidade || req.usuario?.cidade || "",
-        bairro: bairro || req.usuario?.bairro || "",
-        imagens_itens: req.file ? req.file.filename : null,
+        cep: cep || "",
+        cidade: cidade || req.usuario.cidade || "",
+        bairro: bairro || req.usuario.bairro || "",
+        endereco: endereco || "",
+        numero: numero || "",
+        imagem: req.file ? req.file.filename : null,
         usuario_id: req.usuario.id
     };
 
     itemModel.criarItem(item, (err, result) => {
         if (err) {
             console.error("Erro ao criar item:", err);
-            return res.status(500).json({
-                mensagem: "Erro ao cadastrar item."
-            });
+            return res.status(500).json({ mensagem: "Erro ao cadastrar item." });
         }
 
         return res.status(201).json({
             mensagem: "Item cadastrado com sucesso!",
-            itemId: result?.insertId || null
+            itemId: result.insertId
         });
     });
 };
 
-// 2. Listar itens na página inicial / vitrine
-exports.listarItens = (req, res) => {
-    itemModel.listarItens((err, results) => {
+exports.listarCategorias = (req, res) => {
+    itemModel.listarCategorias((err, results) => {
         if (err) {
-            console.error("Erro ao listar itens:", err);
-            return res.status(500).json({
-                mensagem: "Erro ao listar itens."
-            });
+            console.error("Erro ao listar categorias:", err);
+            return res.status(500).json({ mensagem: "Erro ao listar categorias." });
         }
-
-        return res.status(200).json(results || []);
+        res.json(results || []);
     });
 };
 
-// 3. Atualizar item
+exports.listarItens = (req, res) => {
+    itemModel.listarItens(req.query, (err, results) => {
+        if (err) {
+            console.error("Erro ao listar itens:", err);
+            return res.status(500).json({ mensagem: "Erro ao listar itens." });
+        }
+        res.json(results || []);
+    });
+};
+
+exports.buscarItem = (req, res) => {
+    itemModel.buscarItemPorId(req.params.id, (err, results) => {
+        if (err) {
+            console.error("Erro ao buscar item:", err);
+            return res.status(500).json({ mensagem: "Erro ao buscar item." });
+        }
+        if (!results || !results.length) {
+            return res.status(404).json({ mensagem: "Item não encontrado." });
+        }
+        res.json(results[0]);
+    });
+};
+
 exports.atualizarItem = (req, res) => {
     const item = {
         id: req.params.id,
@@ -64,44 +82,50 @@ exports.atualizarItem = (req, res) => {
     itemModel.atualizarItem(item, (err, result) => {
         if (err) {
             console.error("Erro ao atualizar item:", err);
-            return res.status(500).json({
-                mensagem: "Erro ao atualizar item."
-            });
+            return res.status(500).json({ mensagem: "Erro ao atualizar item." });
         }
-
         if (!result || result.affectedRows === 0) {
             return res.status(404).json({
                 mensagem: "Item não encontrado ou você não tem permissão para alterá-lo."
             });
         }
-
-        return res.status(200).json({
-            mensagem: "Item atualizado com sucesso!"
-        });
+        res.json({ mensagem: "Item atualizado com sucesso!" });
     });
 };
 
-// 4. Excluir item
-exports.excluirItem = (req, res) => {
-    const id = req.params.id;
-    const usuario_id = req.usuario.id;
+exports.atualizarStatus = (req, res) => {
+    const statusValidos = ["Disponível", "Reservado", "Doado"];
+    const { status } = req.body;
 
-    itemModel.excluirItem(id, usuario_id, (err, result) => {
+    if (!statusValidos.includes(status)) {
+        return res.status(400).json({ mensagem: "Status inválido." });
+    }
+
+    itemModel.atualizarStatus(req.params.id, status, req.usuario.id, (err, result) => {
         if (err) {
-            console.error("Erro ao excluir item:", err);
-            return res.status(500).json({
-                mensagem: "Erro ao excluir item."
+            console.error("Erro ao atualizar status:", err);
+            return res.status(500).json({ mensagem: "Erro ao atualizar status." });
+        }
+        if (!result || result.affectedRows === 0) {
+            return res.status(404).json({
+                mensagem: "Item não encontrado ou você não tem permissão para alterá-lo."
             });
         }
+        res.json({ mensagem: "Status atualizado com sucesso!" });
+    });
+};
 
+exports.excluirItem = (req, res) => {
+    itemModel.excluirItem(req.params.id, req.usuario.id, (err, result) => {
+        if (err) {
+            console.error("Erro ao excluir item:", err);
+            return res.status(500).json({ mensagem: "Erro ao excluir item." });
+        }
         if (!result || result.affectedRows === 0) {
             return res.status(404).json({
                 mensagem: "Item não encontrado ou você não tem permissão para excluí-lo."
             });
         }
-
-        return res.status(200).json({
-            mensagem: "Item excluído com sucesso!"
-        });
+        res.json({ mensagem: "Item excluído com sucesso!" });
     });
 };

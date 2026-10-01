@@ -2,14 +2,17 @@ const express = require("express");
 const router = express.Router();
 const itemController = require("../controllers/itemController");
 const verificarToken = require("../middleware/auth");
-const upload = require("../middleware/upload"); // Caso use multer para imagens
+const upload = require("../middleware/upload");
 
-// Rota pública para listar todos os itens na tela principal
+// Públicas
+router.get("/categorias", itemController.listarCategorias);
 router.get("/", itemController.listarItens);
+router.get("/:id", itemController.buscarItem);
 
-// Rotas protegidas (precisa estar logado)
+// Protegidas
 router.post("/", verificarToken, upload.single("imagem"), itemController.criarItem);
 router.put("/:id", verificarToken, itemController.atualizarItem);
+router.put("/:id/status", verificarToken, itemController.atualizarStatus);
 router.delete("/:id", verificarToken, itemController.excluirItem);
 
 module.exports = router;

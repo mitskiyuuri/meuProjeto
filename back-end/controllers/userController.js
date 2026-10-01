@@ -5,9 +5,9 @@ const userModel = require("../models/userModel");
 // 1. Cadastro
 exports.cadastrarUsuario = async (req, res) => {
     try {
-        const { nome, email, telefone, cpf, senha, cidade, bairro, endereco } = req.body;
+        const { nome, email, telefone, cpf, senha, cep, cidade, estado, bairro, endereco, numero, complemento } = req.body;
 
-        if (!nome || !email || !cpf || !senha) {
+        if (!nome || !email || !cpf || !senha || !cep || !cidade || !estado || !bairro || !endereco || !numero) {
             return res.status(400).json({
                 mensagem: "Preencha todos os campos obrigatórios."
             });
@@ -35,9 +35,13 @@ exports.cadastrarUsuario = async (req, res) => {
                 telefone: telefone || "",
                 cpf,
                 senha: senhaCriptografada,
-                cidade: cidade || "",
-                bairro: bairro || "",
-                endereco: endereco || "",
+                cep,
+                cidade,
+                estado: String(estado).toUpperCase(),
+                bairro,
+                endereco,
+                numero,
+                complemento: complemento || "",
                 foto_perfil: null,
                 foto_documento: null
             };
@@ -154,9 +158,13 @@ exports.atualizarPerfil = (req, res) => {
         id: req.usuario.id,
         nome: req.body.nome,
         telefone: req.body.telefone,
+        cep: req.body.cep,
         cidade: req.body.cidade,
+        estado: req.body.estado,
         bairro: req.body.bairro,
-        endereco: req.body.endereco
+        endereco: req.body.endereco,
+        numero: req.body.numero,
+        complemento: req.body.complemento
     };
 
     userModel.atualizarUsuario(usuario, (err, result) => {

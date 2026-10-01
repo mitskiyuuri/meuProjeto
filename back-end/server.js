@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors"); // Importante: adicione o cors!
 const path = require("path");
-require("dotenv").config();
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 require("./config/database");
 
 const app = express();
@@ -18,11 +18,13 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const userRoutes = require("./routes/userRoutes");
 const itemRoutes = require("./routes/itemRoutes");
 const solicitacaoRoutes = require("./routes/solicitacaoRoutes");
+const comentarioRoutes = require("./routes/comentarioRoutes");
 
 // 4. Registro das Rotas na Aplicação
 app.use("/usuarios", userRoutes);
 app.use("/itens", itemRoutes);
 app.use("/solicitacoes", solicitacaoRoutes);
+app.use("/comentarios", comentarioRoutes);
 
 // 5. Rota de teste
 app.get("/", (req, res) => {

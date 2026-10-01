@@ -22,17 +22,23 @@ function criarSolicitacao(solicitacao, callback) {
 // 2. Listar solicitações do usuário
 function listarMinhasSolicitacoes(usuario_id, callback) {
     const sql = `
-        SELECT
-            s.*,
-            i.titulo AS item_titulo,
-            i.imagens_itens AS item_imagem,
-            u.nome AS nome_doador
-        FROM solicitacoes s
-        JOIN itens i ON s.item_id = i.id
-        JOIN usuarios u ON i.usuario_id = u.id
-        WHERE s.usuario_id = ?
-        ORDER BY s.id DESC
-    `;
+    SELECT
+        s.*,
+        i.titulo AS item_titulo,
+        (
+            SELECT ii.caminho_imagem
+            FROM imagens_itens ii
+            WHERE ii.item_id = i.id
+            ORDER BY ii.id
+            LIMIT 1
+        ) AS item_imagem,
+        u.nome AS nome_doador
+    FROM solicitacoes s
+    JOIN itens i ON s.item_id = i.id
+    JOIN usuarios u ON i.usuario_id = u.id
+    WHERE s.usuario_id = ?
+    ORDER BY s.id DESC
+`;
 
     db.query(sql, [usuario_id], callback);
 }
